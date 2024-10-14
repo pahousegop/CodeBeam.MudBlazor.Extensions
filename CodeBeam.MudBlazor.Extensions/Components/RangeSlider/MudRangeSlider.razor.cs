@@ -17,7 +17,9 @@ namespace MudExtensions
         private readonly ParameterState<T> _value;
         private readonly ParameterState<T> _upperValue;
         private readonly ParameterState<T?> _slideableMin;
+        private readonly ParameterState<T?> _slideableUpperMin;
         private readonly ParameterState<T?> _slideableMax;
+        private readonly ParameterState<T?> _slideableLowerMax;
 
         /// <summary>
         /// 
@@ -36,9 +38,15 @@ namespace MudExtensions
             _slideableMin = registerScope.RegisterParameter<T?>(nameof(SlideableMin))
                 .WithParameter(() => SlideableMin)
                 .WithChangeHandler(OnSlideableMinChanged);
+            _slideableUpperMin = registerScope.RegisterParameter<T?>(nameof(SlideableUpperMin))
+                .WithParameter(() => SlideableUpperMin)
+                .WithChangeHandler(OnSlideableUpperMinChanged);
             _slideableMax = registerScope.RegisterParameter<T?>(nameof(SlideableMax))
                 .WithParameter(() => SlideableMax)
                 .WithChangeHandler(OnSlideableMaxChanged);
+            _slideableLowerMax = registerScope.RegisterParameter<T?>(nameof(SlideableLowerMax))
+                .WithParameter(() => SlideableLowerMax)
+                .WithChangeHandler(OnSlideableLowerMaxChanged);
         }
 
         private async Task OnValueParameterChanged()
@@ -51,6 +59,11 @@ namespace MudExtensions
             if (_slideableMin.Value != null && _value.Value < _slideableMin.Value)
             {
                 await _value.SetValueAsync((T)_slideableMin.Value);
+            }
+
+            if (_slideableLowerMax.Value != null && _slideableLowerMax.Value < _value.Value)
+            {
+                await _value.SetValueAsync((T)_slideableLowerMax.Value);
             }
         }
 
@@ -65,6 +78,11 @@ namespace MudExtensions
             {
                 await _upperValue.SetValueAsync((T)_slideableMax.Value);
             }
+
+            if (_slideableUpperMin.Value != null && _upperValue.Value < _slideableUpperMin.Value)
+            {
+                await _upperValue.SetValueAsync((T)_slideableUpperMin.Value);
+            }
         }
 
         private async Task OnSlideableMinChanged()
@@ -73,6 +91,19 @@ namespace MudExtensions
             {
                 await _value.SetValueAsync((T)_slideableMin.Value);
             }
+
+            if (_slideableMin.Value != null && _upperValue.Value < _slideableMin.Value)
+            {
+                await _upperValue.SetValueAsync((T)_slideableMin.Value);
+            }
+        }
+
+        private async Task OnSlideableUpperMinChanged()
+        {
+            if (_slideableUpperMin.Value != null && _upperValue.Value < _slideableUpperMin.Value)
+            {
+                await _upperValue.SetValueAsync((T)_slideableUpperMin.Value);
+            }
         }
 
         private async Task OnSlideableMaxChanged()
@@ -80,6 +111,19 @@ namespace MudExtensions
             if (_slideableMax.Value != null && _slideableMax.Value < _upperValue.Value)
             {
                 await _upperValue.SetValueAsync((T)_slideableMax.Value);
+            }
+
+            if (_slideableMax.Value != null && _slideableMax.Value < _value.Value)
+            {
+                await _value.SetValueAsync((T)_slideableMax.Value);
+            }
+        }
+
+        private async Task OnSlideableLowerMaxChanged()
+        {
+            if (_slideableLowerMax.Value != null && _slideableLowerMax.Value < _value.Value)
+            {
+                await _value.SetValueAsync((T)_slideableLowerMax.Value);
             }
         }
 
@@ -130,6 +174,13 @@ namespace MudExtensions
         public T? SlideableMin { get; set; }
 
         /// <summary>
+        /// The minimum value the upper slider thumb can have.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.Slider.Validation)]
+        public T? SlideableUpperMin { get; set; }
+
+        /// <summary>
         /// The maximum allowed value of the slider. Should not be equal to min.
         /// </summary>
         [Parameter]
@@ -137,11 +188,18 @@ namespace MudExtensions
         public T Max { get; set; } = T.CreateTruncating(100);
 
         /// <summary>
-        /// The minimum value can slider thumb has.
+        /// The maximum value can slider thumb has.
         /// </summary>
         [Parameter]
         [Category(CategoryTypes.Slider.Validation)]
         public T? SlideableMax { get; set; }
+
+        /// <summary>
+        /// The maximum value the lower slider thumb can have.
+        /// </summary>
+        [Parameter]
+        [Category(CategoryTypes.Slider.Validation)]
+        public T? SlideableLowerMax { get; set; }
 
         /// <summary>
         /// The minimum distance between the upper and lower values

@@ -1305,5 +1305,14 @@ namespace MudExtensions
             SelectedValues = SelectedValues.Where(x => x?.Equals(chip.Value) == false);
             await SelectedValuesChanged.InvokeAsync(SelectedValues);
         }
+        
+        /// <summary>
+        /// returns the value of the internal property _isOpen 
+        /// </summary>
+        /// <returns></returns>
+        public bool GetOpenState()
+        {
+            return _isOpen;
+        }
     }
 }

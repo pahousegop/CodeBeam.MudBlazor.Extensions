@@ -16,7 +16,7 @@ namespace MudExtensions
     {
         #region Parameters, Fields, Injected Services
 
-        [Inject] IKeyInterceptorFactory? KeyInterceptorFactory { get; set; }
+        [Inject] private IKeyInterceptorService KeyInterceptorService { get; set; } = null!;
         [Inject] IScrollManagerExtended? ScrollManagerExtended { get; set; }
 
         // Fields used in more than one place (or protected and internal ones) are shown here.
@@ -757,9 +757,8 @@ namespace MudExtensions
             if (firstRender)
             {
                 _firstRendered = false;
-                _keyInterceptor = KeyInterceptorFactory?.Create();
 
-                await _keyInterceptor.Connect(_elementId, new KeyInterceptorOptions()
+                await KeyInterceptorService.SubscribeAsync(_elementId, new KeyInterceptorOptions
                 {
                     //EnableLogging = true,
                     TargetClass = "mud-list-item-extended",
@@ -776,7 +775,7 @@ namespace MudExtensions
                         new KeyOptions { Key="A", PreventDown = "key+ctrl" }, // select all items instead of all page text
                         new KeyOptions { Key="/./", SubscribeDown = true, SubscribeUp = true }, // for our users
                     },
-                });
+                }, KeyObserver.KeyDownIgnore(), KeyObserver.KeyUpIgnore());
 
                 if (MudSelectExtended == null && MudAutocomplete == null)
                 {

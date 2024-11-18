@@ -36,10 +36,9 @@ namespace MudExtensions
 
         internal string? _searchString { get; set; }
         private readonly string? multiSelectionText;
-        private IKeyInterceptor? _keyInterceptor;
         static readonly KeyInterceptorOptions _keyInterceptorOptions = new()
         {
-            //EnableLogging = true,
+            EnableLogging = true,
             TargetClass = "mud-input-control",
             Keys =
             {
@@ -850,10 +849,8 @@ namespace MudExtensions
 
             if (firstRender)
             {
-                _keyInterceptor = KeyInterceptorFactory.Create();
-                await _keyInterceptor.Connect(_elementId, _keyInterceptorOptions);
-                _keyInterceptor.KeyDown += HandleKeyDown;
-                _keyInterceptor.KeyUp += HandleKeyUp;
+                // TODO: Use Task for HandleKeyDown / HandleKeyDown
+                await KeyInterceptorService.SubscribeAsync(_elementId, _keyInterceptorOptions, keyDown: HandleKeyDown, keyUp: HandleKeyUp);
                 await UpdateDataVisualiserTextAsync();
                 _firstRendered = true;
                 StateHasChanged();
@@ -872,12 +869,10 @@ namespace MudExtensions
 
             if (disposing)
             {
-                if (_keyInterceptor != null)
+                if (IsJSRuntimeAvailable)
                 {
-                    _keyInterceptor.KeyDown -= HandleKeyDown;
-                    _keyInterceptor.KeyUp -= HandleKeyUp;
-                    _keyInterceptor.Dispose();
-                    _keyInterceptor = null;
+                    // TODO: Switch to IAsyncDisposable
+                    KeyInterceptorService.UnsubscribeAsync(_elementId).CatchAndLog();
                 }
 
                 Items.Clear();
@@ -1167,10 +1162,7 @@ namespace MudExtensions
             UpdateIcon();
 
             // Disable escape propagation: if ComboBox menu is open, only the ComboBox popover should close and underlying components should not handle escape key.
-            if (_keyInterceptor != null)
-            {
-                await _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "Key+none" });
-            }
+            await KeyInterceptorService.UpdateKeyAsync(_elementId, new KeyOptions("Escape", stopDown: "key+none"));
 
             _allSelected = GetAllSelectedState();
 
@@ -1211,10 +1203,7 @@ namespace MudExtensions
                 _searchString = null;
 
             // Enable escape propagation: The ComboBox popover was closed, no underlying components are allowed to handle escape key.
-            if (_keyInterceptor != null)
-            {
-                await _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "none" });
-            }
+            await KeyInterceptorService.UpdateKeyAsync(_elementId, new KeyOptions("Escape", stopDown: "none"));
 
             await OnClose.InvokeAsync();
         }

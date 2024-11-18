@@ -25,12 +25,11 @@ namespace MudExtensions
             IconSize = Size.Medium;
         }
 
-        [Inject] private IKeyInterceptorFactory? KeyInterceptorFactory { get; set; }
+        [Inject] private IKeyInterceptorService KeyInterceptorService { get; set; } = null!;
 
         private MudListExtended<T?>? _list;
         private bool _dense;
         private string? multiSelectionText;
-        private IKeyInterceptor? _keyInterceptor;
         /// <summary>
         /// The collection of items within this select
         /// </summary>
@@ -776,8 +775,8 @@ namespace MudExtensions
 
             if (firstRender)
             {
-                _keyInterceptor = KeyInterceptorFactory?.Create();
-                await _keyInterceptor.Connect(_elementId, new KeyInterceptorOptions()
+                // TODO: Make HandleKeyDown / HandleKeyUp async Task
+                await KeyInterceptorService.SubscribeAsync(_elementId, new KeyInterceptorOptions()
                 {
                     //EnableLogging = true,
                     TargetClass = "mud-input-control",
@@ -794,9 +793,7 @@ namespace MudExtensions
                         new KeyOptions { Key="A", PreventDown = "key+ctrl" }, // select all items instead of all page text
                         new KeyOptions { Key="/./", SubscribeDown = true, SubscribeUp = true }, // for our users
                     },
-                });
-                _keyInterceptor.KeyDown += HandleKeyDown;
-                _keyInterceptor.KeyUp += HandleKeyUp;
+                }, keyDown: HandleKeyDown, keyUp: HandleKeyUp);
                 await UpdateTextPropertyAsync(false);
                 _list?.ForceUpdateItems();
                 SelectedListItem = Items.FirstOrDefault(x => x.Value != null && Value != null && x.Value.Equals(Value))?.ListItem;
@@ -824,12 +821,11 @@ namespace MudExtensions
 
             if (disposing)
             {
-                if (_keyInterceptor != null)
+                if (IsJSRuntimeAvailable)
                 {
-                    _keyInterceptor.KeyDown -= HandleKeyDown;
-                    _keyInterceptor.KeyUp -= HandleKeyUp;
+                    //TODO: Use IAsyncDisposable instead.
+                    KeyInterceptorService.UnsubscribeAsync(_elementId).CatchAndLog();
                 }
-                _keyInterceptor?.Dispose();
             }
         }
 
@@ -1012,7 +1008,7 @@ namespace MudExtensions
             StateHasChanged();
 
             //disable escape propagation: if selectmenu is open, only the select popover should close and underlying components should not handle escape key
-            await _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "Key+none" });
+            await KeyInterceptorService.UpdateKeyAsync(_elementId, new() { Key = "Escape", StopDown = "Key+none" });
             await OnOpen.InvokeAsync();
         }
 
@@ -1034,7 +1030,7 @@ namespace MudExtensions
             //}
 
             //enable escape propagation: the select popover was closed, now underlying components are allowed to handle escape key
-            await _keyInterceptor.UpdateKey(new() { Key = "Escape", StopDown = "none" });
+            await KeyInterceptorService.UpdateKeyAsync(_elementId, new() { Key = "Escape", StopDown = "none" });
 
             await OnClose.InvokeAsync();
         }

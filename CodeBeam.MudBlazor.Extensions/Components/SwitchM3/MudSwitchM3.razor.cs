@@ -64,8 +64,7 @@ namespace MudExtensions
                 .AddStyle("color", "var(--mud-palette-background)", !string.IsNullOrEmpty(ThumbOffIcon))
                 .Build();
 
-        private IKeyInterceptor? _keyInterceptor;
-        [Inject] private IKeyInterceptorFactory? KeyInterceptorFactory { get; set; }
+        [Inject] private IKeyInterceptorService KeyInterceptorService { get; set; } = null!;
 
         /// <summary>
         /// The color of the component. It supports the theme colors.
@@ -163,9 +162,8 @@ namespace MudExtensions
         {
             if (firstRender)
             {
-                _keyInterceptor = KeyInterceptorFactory?.Create();
-
-                await _keyInterceptor.Connect(_elementId, new KeyInterceptorOptions()
+                // TODO: Make HandleKeyDown async Task
+                await KeyInterceptorService.SubscribeAsync(_elementId, new KeyInterceptorOptions()
                 {
                     //EnableLogging = true,
                     TargetClass = "mud-switch-base-m3",
@@ -174,9 +172,7 @@ namespace MudExtensions
                         new KeyOptions { Key="ArrowDown", PreventDown = "key+none" }, // prevent scrolling page, instead decrement
                         new KeyOptions { Key=" ", PreventDown = "key+none", PreventUp = "key+none" },
                     },
-                });
-
-                _keyInterceptor.KeyDown += HandleKeyDown;
+                }, keyDown: HandleKeyDown);
             }
             await base.OnAfterRenderAsync(firstRender);
         }
@@ -191,10 +187,10 @@ namespace MudExtensions
 
             if (disposing)
             {
-                if(_keyInterceptor != null)
+                if (IsJSRuntimeAvailable)
                 {
-                    _keyInterceptor.KeyDown -= HandleKeyDown;
-                    _keyInterceptor.Dispose();
+                    //TODO: Use IAsyncDisposable
+                    KeyInterceptorService.UnsubscribeAsync(_elementId).CatchAndLog();
                 }
             }
         }

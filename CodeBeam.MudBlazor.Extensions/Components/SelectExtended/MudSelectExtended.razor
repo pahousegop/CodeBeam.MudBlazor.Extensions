@@ -16,14 +16,14 @@
                                       Disabled="@GetDisabledState()" ReadOnly="true" Error="@Error" ErrorId="@ErrorId"
                                       Clearable="@Clearable" OnClearButtonClick="(async (e) => await SelectClearButtonClickHandlerAsync(e))"
                                       @attributes="UserAttributes" OnBlur="@OnLostFocus" ShrinkLabel="@ShrinkLabel"
-                                      ShowVisualiser="true" DataVisualiserStyle="min-height: 1.1876em">
+                                      ShowVisualiser="true" DataVisualiserStyle="min-height: 1.1876em; padding-right: 0px;">
 
                         <AdornmentEnd>
                             <MudIcon Icon="@_currentIcon" Color="@AdornmentColor" Size="@IconSize" @onclick="OnAdornmentClick" />
                         </AdornmentEnd>
 
                         <DataVisualiser>
-                            <div class="@TemplateClass">
+                            <div class="@TemplateClass" style="overflow: hidden; text-overflow: ellipsis;">
                                 @if (Strict && !IsValueInList)
                                 {
                                     //Show nothing

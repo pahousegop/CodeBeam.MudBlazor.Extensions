@@ -1,4 +1,6 @@
-on: push
+on: 
+  push:
+  workflow_dispatch:
 name: 🚀 Deploy website on push
 jobs:
   web-deploy:

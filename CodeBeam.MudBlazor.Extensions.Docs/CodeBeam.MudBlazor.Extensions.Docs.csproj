@@ -21,6 +21,8 @@
 		<ProjectReference Include="..\CodeBeam.MudBlazor.Extensions\CodeBeam.MudBlazor.Extensions.csproj" />
 	</ItemGroup>
 
+
+	
   <ItemGroup>
     <Content Update="Components\FixedTransition.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

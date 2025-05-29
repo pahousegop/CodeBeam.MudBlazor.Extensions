@@ -12,6 +12,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddMudExtensions();
 builder.Services.AddScoped<MudExtensionsDocsService>();
+builder.Services.AddScoped<HttpClient>();
 
 var app = builder.Build();
 

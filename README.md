@@ -55,7 +55,7 @@
 ## Playground
 
 - **Docs**
-https://codebeam-mudextensions.pages.dev/
+https://mudextensions.codebeam.org/
 - **Try MudExtensions**
 https://trymudextensions.pages.dev/
 

@@ -16,7 +16,7 @@ namespace MudExtensions
         /// <summary>
         /// 
         /// </summary>
-        protected string? StartClassname => new CssBuilder()
+        protected string? StartClassname => new CssBuilder("mud-transfer-list-common")
             .AddClass(ClassListCommon)
             .AddClass(ClassStartList)
             .Build();
@@ -24,7 +24,7 @@ namespace MudExtensions
         /// <summary>
         /// 
         /// </summary>
-        protected string? EndClassname => new CssBuilder()
+        protected string? EndClassname => new CssBuilder("mud-transfer-list-common")
             .AddClass(ClassListCommon)
             .AddClass(ClassEndList)
             .Build();
@@ -119,10 +119,22 @@ namespace MudExtensions
         public string? EndTitle { get; set; }
 
         /// <summary>
-        /// 
+        /// If true, the transfer list will be displayed vertically. Useful for narrow spaces or mobile devices.
         /// </summary>
         [Parameter]
         public bool Vertical { get; set; }
+
+        /// <summary>
+        /// If true, adds top and bottom padding to the lists. Default is false.
+        /// </summary>
+        [Parameter]
+        public bool Padding { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        [Parameter]
+        public bool Dense { get; set; }
 
         /// <summary>
         /// 
@@ -357,6 +369,7 @@ namespace MudExtensions
                 OrderItems();
                 await EndCollectionChanged.InvokeAsync(EndCollection);
                 await StartCollectionChanged.InvokeAsync(StartCollection);
+                _startList.Clear();
             }
             else if (startToEnd == false)
             {
@@ -377,6 +390,7 @@ namespace MudExtensions
                 OrderItems();
                 await StartCollectionChanged.InvokeAsync(StartCollection);
                 await EndCollectionChanged.InvokeAsync(EndCollection);
+                _endList.Clear();
             }
         }
 
